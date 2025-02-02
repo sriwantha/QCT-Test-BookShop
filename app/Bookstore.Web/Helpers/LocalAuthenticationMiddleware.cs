@@ -23,25 +23,24 @@ namespace Bookstore.Web.Helpers
             {
                 CreateClaimsPrincipal(context);
 
-                await SaveCustomerDetailsAsync();
+                await SaveCustomerDetailsAsync(context);
 
-                var userCookie = new HttpCookie("LocalAuthentication") { Expires = DateTime.Now.AddDays(1) };
-
-                HttpContext.Current.Response.Cookies.Add(userCookie);
+                var cookieOptions = new CookieOptions { Expires = DateTime.Now.AddDays(1) };
+                context.Response.Cookies.Append("LocalAuthentication", "true", cookieOptions);
 
                 context.Response.Redirect("/");
             }
-            else if (HttpContext.Current.Request.Cookies["LocalAuthentication"] != null)
+            else if (context.Request.Cookies["LocalAuthentication"] != null)
             {
                 CreateClaimsPrincipal(context);
 
-                await SaveCustomerDetailsAsync();
+                await SaveCustomerDetailsAsync(context);
 
-                await Next.Invoke(context);
+                await next(context);
             }
             else
             {
-                await Next.Invoke(context);
+                await next(context);
             }
         }
 
