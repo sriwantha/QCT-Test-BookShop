@@ -7,7 +7,6 @@ using Bookstore.Domain.Books;
 using Bookstore.Domain.ReferenceData;
 using Bookstore.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 
 namespace Bookstore.Web.Areas.Admin.Models.Inventory
@@ -84,7 +83,7 @@ namespace Bookstore.Web.Areas.Admin.Models.Inventory
         [MaxFileSize(2*1024*1024)]
         [ImageTypes(new string[] {".png", ".jpg", ".jpeg"})]
         [DisplayName("Cover image")]
-        public IFormFile CoverImage { get; set; }
+        public HttpPostedFileBase CoverImage { get; set; }
         
         public string CoverImageUrl { get; set; }
 
