@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Bookstore.Common;
 
 namespace Bookstore.Web
 {
@@ -15,18 +17,44 @@ namespace Bookstore.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            LoggingSetup.ConfigureLogging();
+            services.AddLogging(builder =>
+            {
+                builder.AddConfiguration(Configuration.GetSection("Logging"));
+                builder.AddConsole();
+            });
 
-            ConfigurationSetup.ConfigureConfiguration();
+            ConfigureConfiguration(services);
 
-            DependencyInjectionSetup.ConfigureDependencyInjection(services);
+            ConfigureDependencyInjection(services);
 
-            AuthenticationConfig.ConfigureAuthentication(services);
+            ConfigureAuthentication(services);
         }
 
-        public void Configure(IApplicationBuilder app)
+        private void ConfigureConfiguration(IServiceCollection services)
+        {
+            // Add configuration setup logic here
+        }
+
+        private void ConfigureDependencyInjection(IServiceCollection services)
+        {
+            // Add dependency injection setup logic here
+        }
+
+        private void ConfigureAuthentication(IServiceCollection services)
+        {
+            // Add authentication setup logic here
+        }
+
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             // Configure the HTTP request pipeline here
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
