@@ -1,9 +1,10 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
 using Bookstore.Domain.Customers;
-using Microsoft.Owin;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Owin;
+
 
 namespace Bookstore.Web.Helpers
 {
@@ -12,29 +13,27 @@ namespace Bookstore.Web.Helpers
         private const string UserId = "FB6135C7-1464-4A72-B74E-4B63D343DD09";
 
         private readonly ICustomerService _customerService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LocalAuthenticationMiddleware(OwinMiddleware next, ICustomerService customerService, IHttpContextAccessor httpContextAccessor) : base(next)
+        public LocalAuthenticationMiddleware(OwinMiddleware next, ICustomerService customerService) : base(next)
         {
             _customerService = customerService;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         public override async Task Invoke(IOwinContext context)
         {
-            var httpContext = _httpContextAccessor.HttpContext;
-
             if (context.Request.Path.Value.StartsWith("/Authentication/Login"))
             {
                 CreateClaimsPrincipal(context);
 
                 await SaveCustomerDetailsAsync();
 
-                httpContext.Response.Cookies.Append("LocalAuthentication", "true", new CookieOptions { Expires = DateTime.Now.AddDays(1) });
+                var userCookie = new HttpCookie("LocalAuthentication") { Expires = DateTime.Now.AddDays(1) };
+
+                HttpContext.Current.Response.Cookies.Add(userCookie);
 
                 context.Response.Redirect("/");
             }
-            else if (httpContext.Request.Cookies.ContainsKey("LocalAuthentication"))
+            else if (HttpContext.Current.Request.Cookies["LocalAuthentication"] != null)
             {
                 CreateClaimsPrincipal(context);
 
@@ -63,19 +62,15 @@ namespace Bookstore.Web.Helpers
 
         private async Task SaveCustomerDetailsAsync()
         {
-            var httpContext = _httpContextAccessor.HttpContext;
-            var identity = httpContext.User.Identity as ClaimsIdentity;
+            var identity = (ClaimsIdentity)HttpContext.Current.User.Identity;
 
-            if (identity != null)
-            {
-                var dto = new CreateOrUpdateCustomerDto(
-                    identity.FindFirst("nameidentifier")?.Value,
-                    identity.Name,
-                    identity.FindFirst("given_name")?.Value,
-                    identity.FindFirst("family_name")?.Value);
+            var dto = new CreateOrUpdateCustomerDto(
+                identity.FindFirst("nameidentifier").Value,
+                identity.Name,
+                identity.FindFirst("given_name").Value,
+                identity.FindFirst("family_name").Value);
 
-                await _customerService.CreateOrUpdateCustomerAsync(dto);
-            }
+            await _customerService.CreateOrUpdateCustomerAsync(dto);
         }
     }
 }
