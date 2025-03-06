@@ -1,5 +1,5 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Owin;
-
 
 namespace Bookstore.Web.Helpers
 {
@@ -7,7 +7,8 @@ namespace Bookstore.Web.Helpers
     {
         public static string GetReturnUrl(this IOwinRequest request)
         {
-            return $"{request.Scheme}://{request.Host}/signin-oidc";
+            var httpContext = request.Get<HttpContext>("owin.HttpContext");
+            return $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/signin-oidc";
         }
     }
 }
