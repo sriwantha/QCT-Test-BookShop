@@ -13,15 +13,32 @@ namespace Bookstore.Web
 
         public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
-            LoggingSetup.ConfigureLogging();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
 
-            ConfigurationSetup.ConfigureConfiguration();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
 
             // Update these methods to work with ASP.NET Core
             // DependencyInjectionSetup.ConfigureDependencyInjection(app);
             // AuthenticationConfig.ConfigureAuthentication(app);
-
-            // Add ASP.NET Core middleware and routing configuration here
         }
     }
 }
